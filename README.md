@@ -18,6 +18,7 @@ The purpose of this repository is to provide an end-to-end AWS API ServerLess in
     - Lambda Permission
     - Cloudwatch log group
 - [Dynamo DB Table](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Introduction.html)
+- [Secrets Manager](https://aws.amazon.com/secrets-manager/)
 
 The Infrastructure diagram:
 
@@ -52,7 +53,7 @@ terraform:
 ```
 
 - `IF` S3 Remote state is prefered, check [aws-terraform-serverless-example](https://github.com/leandro-mana/aws-terraform-serverless-example) which is a simpler variation of this solution by using S3 and DynamoDB, along with a Docker development environment to trigger all the targets from `Makefile`
-- `ELSE`, the example on this repo is by creating a `Development Workspace` in [Terraform Cloud](https://www.terraform.io/cloud-docs), the code groupped into the terraform folder in a [modular](terraform/modules) way to simplify the variables declaration as well as common objects to be used along with the [services](terraform/services) definition. Each service, sources the modules plus any other resource or data block needed for its domain of infrastructure that is self-defined, then at the root of the terraform folder a single [main.tf](terraform/main.tf) definition where all the infrastructure is pointed, and as an extra layer of modularity, individual flags variables are setup for each modular part of the infrastructure to be deployed in different Workspaces, for example the `Development` Workspaces might have all set to `true`, while on `Production` Workspace there might be still services not ready to be deployed, this allows to keep using the same `main.tf` definition but with different deployment results on each env.
+- `ELSE`, the example on this repo is by creating a `Development Workspace` in [Terraform Cloud](https://www.terraform.io/cloud-docs), the code groupped into the terraform folder in a [modular](terraform/modules) way to simplify the variables declaration as well as common objects to be used along with the [services](terraform/services) definition. Each service, sources the modules plus any other resource or data block needed for its domain of infrastructure that is self-defined, then at the root of the terraform folder a single [main.tf](terraform/main.tf) definition where all the infrastructure is pointed, and as an extra layer of modularity, individual flags variables are setup for each modular part of the infrastructure to be deployed in different Workspaces, for example the `Development` Workspaces might have all set to `true` for each service component, while on `Production` Workspace there might be still services not ready to be deployed, this allows to keep using the same `main.tf` definition but with different deployment results on each env.
 
 **Requirements:**
 - [Python3](https://docs.python-guide.org/starting/installation/)
@@ -103,6 +104,8 @@ hello_app_base_url = "https://<hash>.execute-api.<region>.amazonaws.com/hello_ap
 movies_app_base_url = "https://<hash>.execute-api.<region>.amazonaws.com/movies_app-stage"
 
 # API invoke and output
+
+## Hello App
 curl "https://<hash>.execute-api.<region>.amazonaws.com/hello_app-stage/hello"
     
    OUTPUT -> "Hello Lambda!"
@@ -111,6 +114,7 @@ curl "https://<hash>.execute-api.<region>.amazonaws.com/hello_app-stage/hello?Na
 
    OUTPUT -> "Hello Leo!"
 
+## Movies App
 curl -X POST "https://<hash>.execute-api.<region>.amazonaws.com/movies_app-stage/movies"
 
    OUTPUT -> {"message": "Successfully inserted data!"}
@@ -120,9 +124,25 @@ curl -X POST "https://<hash>.execute-api.<region>.amazonaws.com/movies_app-stage
     -d '{"year":1977, "title":"Starwars"}'
 
    OUTPUT -> {"message": "Successfully inserted data!"}
+
+## Hello App
+curl "https://<hash>.execute-api.<region>.amazonaws.com/secret_app-stage/secret?Secret=secret_app_secret"
+    
+   OUTPUT -> {"secret_app_key":"TOP-SECRET-VALUE"}
+
+curl "https://<hash>.execute-api.<region>.amazonaws.com/secret_app-stage/secret?Secret=WRONG_SECRET"
+
+  OUTPUT -> 'EXCEPTION RAISED'
 ```
 
-This example can be extended to different `environments` by adding the respective `Terraform Workspace` pointing to [main.tf](terraform/main.tf) and adding the corresponding configuration for the variables and the flags as shown in the pics above.
+This example can be extended to different `environments` by adding the respective `Terraform Workspace` pointing to [main.tf](terraform/main.tf) and adding the corresponding configuration for the variables and the flags for each App deployment, bellow is a picture that shows how to orchestrate the `Terraform` code along with the repository and also to emphasize the usage of the secrets by the following strategy:
+- The secret is defined as a `sensitive` TF Variable
+- The value of such variable is added in the `Terraform UI`
+- The [secrets_manager](terraform/modules/secrets_manager/main.tf) module, adds such value into Secrets Manager Service, and creates a policy ONLY for that specific secret
+- The [secret_app](terraform/services/secret_app/main.tf) that uses the `secrets_manager` module, adds the IAM Policy ARN to be attached on its IAM Role.
+- Resulting that only this specific service has access to only this specific secret. Such infra definition is simple to track and each service that needs to use secrets will follow similar standards.
+
+![](img/secrets_strategy.drawio.png)
 
 The [mypy](http://mypy-lang.org/) and the [pytest](https://docs.pytest.org/) configuration is scalable for a real project, but the unit tests added into the [test](./test/) folder is to show how to store them along with the configuration but are just an example of assertions.
 

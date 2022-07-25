@@ -21,11 +21,9 @@ variable "artifact_s3_key" {
   type        = string
 }
 
-# IAM
-variable "iam_policy_json_document" {
-  description = "The JSON policy document when policy_file_path is null"
-  type        = string
-  default     = ""
+variable "iam_arn_policies" {
+  description = "The JSON policies ARNs List to attach to the Lambda IAM Role"
+  type        = list(any)
 }
 
 # Cloudwatch log group
