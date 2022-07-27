@@ -79,3 +79,16 @@ variable "movies_app_ddb_range_key" {
   description = "The Dynamo DB Range Key"
   type        = string
 }
+
+# Secret App
+variable "deploy_secret_app" {
+  description = "Deploy in the Environment"
+  type        = bool
+}
+
+variable "secret_app_secret_value" {
+  description = "The JSON Object for the Secret Value"
+  type        = map(any)
+  sensitive   = true
+  nullable    = false
+}

@@ -57,3 +57,19 @@ module "movies_app" {
   movies_app_ddb_hash_key       = var.movies_app_ddb_hash_key
   movies_app_ddb_range_key      = var.movies_app_ddb_range_key
 }
+
+##############
+# Secret App #
+##############
+module "secret_app" {
+  count                     = var.deploy_secret_app == true ? 1 : 0
+  source                    = "./services/secret_app"
+  tags                      = local.common_tags
+  secret_value              = var.secret_app_secret_value
+  aws_region                = var.aws_region
+  log_retention_in_days     = var.log_retention_in_days
+  artifact_bucket_id        = module.s3_artifact_bucket[0].id
+  api_gateway_execution_arn = module.api_gateway[0].execution_arn
+  api_gw_id                 = module.api_gateway[0].id
+  api_gw_log_group_arn      = module.api_gateway[0].cw_log_group_arn
+}

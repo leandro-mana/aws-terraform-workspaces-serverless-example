@@ -1,3 +1,9 @@
+data "archive_file" "movies_app" {
+  type        = "zip"
+  source_dir  = "./../src/movies_app"
+  output_path = "./../build/movies_app.zip"
+}
+
 module "ddb_table_movies" {
   source         = "./../../modules/ddb_table"
   tags           = var.tags
@@ -25,36 +31,37 @@ data "aws_iam_policy_document" "movies_app" {
       "arn:aws:dynamodb:*:*:table/${module.ddb_table_movies.id}",
     ]
   }
-
-  statement {
-    effect = "Allow"
-    actions = [
-      "logs:CreateLogGroup",
-      "logs:CreateLogStream",
-      "logs:PutLogEvents"
-    ]
-    resources = ["*"]
-  }
 }
 
-data "archive_file" "movies_app" {
-  type        = "zip"
-  source_dir  = "./../src/movies_app"
-  output_path = "./../build/movies_app.zip"
+module "ddb_iam_policy" {
+  source                   = "./../../modules/iam_policy"
+  tags                     = var.tags
+  policy_name              = "movies-policy"
+  iam_policy_json_document = data.aws_iam_policy_document.movies_app.json
+}
+
+module "generic_iam_policy" {
+  source                   = "./../../modules/iam_policy"
+  tags                     = var.tags
+  policy_name              = "movies-generic-policy"
+  iam_policy_json_document = file("./modules/iam_policies/lambda_generic.json")
 }
 
 module "lambda_movies_app" {
-  source                   = "./../../modules/lambda"
-  tags                     = var.tags
-  artifact_source          = data.archive_file.movies_app.output_path
-  artifact_bucket_id       = var.artifact_bucket_id
-  artifact_s3_key          = "movies_app/movies_app.zip"
-  name                     = "movies_app"
-  runtime                  = "python3.8"
-  handler                  = "movies.lambda_handler"
-  source_code_hash         = data.archive_file.movies_app.output_base64sha256
-  iam_policy_json_document = data.aws_iam_policy_document.movies_app.json
-  log_retention_in_days    = var.log_retention_in_days
+  source             = "./../../modules/lambda"
+  tags               = var.tags
+  artifact_source    = data.archive_file.movies_app.output_path
+  artifact_bucket_id = var.artifact_bucket_id
+  artifact_s3_key    = "movies_app/movies_app.zip"
+  name               = "movies_app"
+  runtime            = "python3.8"
+  handler            = "movies.lambda_handler"
+  source_code_hash   = data.archive_file.movies_app.output_base64sha256
+  iam_arn_policies = [
+    module.ddb_iam_policy.arn,
+    module.generic_iam_policy.arn
+  ]
+  log_retention_in_days = var.log_retention_in_days
   layers = [
     "arn:aws:lambda:${var.aws_region}:${var.aws_provided_layer_account_id}:layer:${var.aws_provided_layer_name}:${var.aws_provided_layer_version}"
   ]

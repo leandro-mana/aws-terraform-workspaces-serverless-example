@@ -24,19 +24,16 @@ resource "aws_iam_role" "lambda_execution_role" {
   tags = var.tags
 }
 
-resource "aws_iam_policy" "lambda_execution_policy" {
-  name   = "${var.name}-policy"
-  policy = var.iam_policy_json_document
-}
-
-resource "aws_iam_role_policy_attachment" "policy_attach" {
+resource "aws_iam_role_policy_attachment" "policies_attach" {
   role       = aws_iam_role.lambda_execution_role.name
-  policy_arn = aws_iam_policy.lambda_execution_policy.arn
+  count      = length(var.iam_arn_policies)
+  policy_arn = var.iam_arn_policies[count.index]
 }
 
 resource "aws_cloudwatch_log_group" "cloudwatch_log_group" {
   name              = "/aws/lambda/${var.name}"
   retention_in_days = var.log_retention_in_days
+  tags              = var.tags
 }
 
 resource "aws_lambda_function" "lambda_function" {
