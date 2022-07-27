@@ -29,8 +29,10 @@ def __get_secrets(secret_id: str, secret_type='SecretString') -> str:
         if not secret:
             raise ValueError(f'SecretType: {secret_type} Not Found')
 
-    except SECRETS_CLIENT.exceptions.ResourceNotFoundException as exc:
-        raise ValueError('Resource Not Found Exception') from exc
+    except (
+        SECRETS_CLIENT.exceptions.ResourceNotFoundException,
+        SECRETS_CLIENT.exceptions.ClientError) as exc:
+        raise ValueError(exc) from exc
 
     else:
         return secret
@@ -64,7 +66,7 @@ def lambda_handler(event: dict, context: LambdaContext) -> dict:
             'headers': {
                 'Content-Type': 'application/json',
             },
-            'body': 'EXCEPTION RAISED'
+            'body': f'EXCEPTION RAISED: {error}'
         }
 
         return err_msg
