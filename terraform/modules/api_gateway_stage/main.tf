@@ -19,5 +19,4 @@ resource "aws_apigatewayv2_stage" "stage" {
       }
     )
   }
-  tags = var.tags
 }

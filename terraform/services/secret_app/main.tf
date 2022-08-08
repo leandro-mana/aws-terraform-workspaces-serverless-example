@@ -6,21 +6,18 @@ data "archive_file" "secret_app" {
 
 module "secrets_manager" {
   source       = "./../../modules/secrets_manager"
-  tags         = var.tags
   secret_name  = "secret_app_secret"
   secret_value = var.secret_value
 }
 
 module "generic_iam_policy" {
   source                   = "./../../modules/iam_policy"
-  tags                     = var.tags
   policy_name              = "secret-generic-policy"
   iam_policy_json_document = file("./modules/iam_policies/lambda_generic.json")
 }
 
 module "lambda_secret_app" {
   source             = "./../../modules/lambda"
-  tags               = var.tags
   artifact_source    = data.archive_file.secret_app.output_path
   artifact_bucket_id = var.artifact_bucket_id
   artifact_s3_key    = "secret_app/secret_app.zip"
@@ -48,7 +45,6 @@ module "lambda_permission_secret_app" {
 
 module "api_gw_stage_secret_app" {
   source           = "./../../modules/api_gateway_stage"
-  tags             = var.tags
   name             = "${module.lambda_secret_app.function_name}-stage"
   api_gw_id        = var.api_gw_id
   cw_log_group_arn = var.api_gw_log_group_arn

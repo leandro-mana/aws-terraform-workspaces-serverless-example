@@ -21,7 +21,6 @@ resource "aws_iam_role" "lambda_execution_role" {
     ]
   })
 
-  tags = var.tags
 }
 
 resource "aws_iam_role_policy_attachment" "policies_attach" {
@@ -33,7 +32,6 @@ resource "aws_iam_role_policy_attachment" "policies_attach" {
 resource "aws_cloudwatch_log_group" "cloudwatch_log_group" {
   name              = "/aws/lambda/${var.name}"
   retention_in_days = var.log_retention_in_days
-  tags              = var.tags
 }
 
 resource "aws_lambda_function" "lambda_function" {
@@ -44,7 +42,6 @@ resource "aws_lambda_function" "lambda_function" {
   handler          = var.handler
   source_code_hash = var.source_code_hash
   role             = aws_iam_role.lambda_execution_role.arn
-  tags             = var.tags
   layers           = var.layers != [] ? var.layers : []
 
   dynamic "environment" {

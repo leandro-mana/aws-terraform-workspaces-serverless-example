@@ -18,4 +18,5 @@ terraform {
 # Providers
 provider "aws" {
   region = var.aws_region
+  tags   = local.common_tags
 }

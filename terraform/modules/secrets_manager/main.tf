@@ -1,7 +1,6 @@
 resource "aws_secretsmanager_secret" "secret" {
   name                    = var.secret_name
   recovery_window_in_days = 0
-  tags                    = var.tags
 }
 
 resource "aws_secretsmanager_secret_version" "secret_version" {
@@ -28,5 +27,4 @@ data "aws_iam_policy_document" "secret_policy_document" {
 resource "aws_iam_policy" "secret_policy" {
   name   = "${var.secret_name}-policy"
   policy = data.aws_iam_policy_document.secret_policy_document.json
-  tags   = var.tags
 }

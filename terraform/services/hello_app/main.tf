@@ -6,14 +6,12 @@ data "archive_file" "hello_app" {
 
 module "generic_iam_policy" {
   source                   = "./../../modules/iam_policy"
-  tags                     = var.tags
   policy_name              = "hello-generic-policy"
   iam_policy_json_document = file("./modules/iam_policies/lambda_generic.json")
 }
 
 module "lambda_hello_app" {
   source             = "./../../modules/lambda"
-  tags               = var.tags
   artifact_source    = data.archive_file.hello_app.output_path
   artifact_bucket_id = var.artifact_bucket_id
   artifact_s3_key    = "hello_app/hello_app.zip"
@@ -40,7 +38,6 @@ module "lambda_permission_hello_app" {
 
 module "api_gw_stage_hello_app" {
   source           = "./../../modules/api_gateway_stage"
-  tags             = var.tags
   name             = "${module.lambda_hello_app.function_name}-stage"
   api_gw_id        = var.api_gw_id
   cw_log_group_arn = var.api_gw_log_group_arn

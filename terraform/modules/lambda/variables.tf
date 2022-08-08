@@ -1,9 +1,3 @@
-# Generic
-variable "tags" {
-  description = "The tags for the resource"
-  type        = map(string)
-}
-
 # S3 Artifact
 variable "artifact_source" {
   description = "The path for the Lambda artifact"

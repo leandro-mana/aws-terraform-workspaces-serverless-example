@@ -1,8 +1,3 @@
-variable "tags" {
-  description = "The tags for the resource"
-  type        = map(string)
-}
-
 variable "policy_name" {
   description = "The Name of the IAM Policy"
   type        = string
