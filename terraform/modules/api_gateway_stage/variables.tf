@@ -1,9 +1,3 @@
-# Generic
-variable "tags" {
-  description = "The tags for the resource"
-  type        = map(string)
-}
-
 variable "name" {
   description = "The API Gateway stage name"
   type        = string

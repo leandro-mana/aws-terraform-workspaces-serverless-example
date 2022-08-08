@@ -1,8 +1,3 @@
-variable "tags" {
-  description = "The tags for the resource"
-  type        = map(string)
-}
-
 variable "table_name" {
   description = "The Dynamo DB Table Name"
   type        = string

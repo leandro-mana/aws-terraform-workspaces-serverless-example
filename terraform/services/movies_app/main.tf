@@ -6,7 +6,6 @@ data "archive_file" "movies_app" {
 
 module "ddb_table_movies" {
   source         = "./../../modules/ddb_table"
-  tags           = var.tags
   table_name     = var.movies_app_ddb_table
   billing_mode   = var.movies_app_ddb_billing_mode
   read_capacity  = var.movies_app_ddb_read_capacity
@@ -35,21 +34,18 @@ data "aws_iam_policy_document" "movies_app" {
 
 module "ddb_iam_policy" {
   source                   = "./../../modules/iam_policy"
-  tags                     = var.tags
   policy_name              = "movies-policy"
   iam_policy_json_document = data.aws_iam_policy_document.movies_app.json
 }
 
 module "generic_iam_policy" {
   source                   = "./../../modules/iam_policy"
-  tags                     = var.tags
   policy_name              = "movies-generic-policy"
   iam_policy_json_document = file("./modules/iam_policies/lambda_generic.json")
 }
 
 module "lambda_movies_app" {
   source             = "./../../modules/lambda"
-  tags               = var.tags
   artifact_source    = data.archive_file.movies_app.output_path
   artifact_bucket_id = var.artifact_bucket_id
   artifact_s3_key    = "movies_app/movies_app.zip"
@@ -81,7 +77,6 @@ module "lambda_permission_movies_app" {
 
 module "api_gw_stage_movies_app" {
   source           = "./../../modules/api_gateway_stage"
-  tags             = var.tags
   name             = "${module.lambda_movies_app.function_name}-stage"
   api_gw_id        = var.api_gw_id
   cw_log_group_arn = var.api_gw_log_group_arn

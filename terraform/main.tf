@@ -6,7 +6,6 @@
 module "s3_artifact_bucket" {
   count       = var.deploy_s3_artifact_bucket == true ? 1 : 0
   source      = "./modules/s3_artifact_bucket"
-  tags        = local.common_tags
   bucket_name = "${var.environment}-${var.project}-${var.aws_region}-artifacts"
 }
 
@@ -16,7 +15,6 @@ module "s3_artifact_bucket" {
 module "api_gateway" {
   count                 = var.deploy_api_gw == true ? 1 : 0
   source                = "./modules/api_gateway"
-  tags                  = local.common_tags
   name                  = "hello_app"
   protocol_type         = "HTTP"
   log_retention_in_days = var.log_retention_in_days
@@ -28,7 +26,6 @@ module "api_gateway" {
 module "hello_app" {
   count                     = var.deploy_hello_app == true ? 1 : 0
   source                    = "./services/hello_app"
-  tags                      = local.common_tags
   aws_region                = var.aws_region
   log_retention_in_days     = var.log_retention_in_days
   artifact_bucket_id        = module.s3_artifact_bucket[0].id
@@ -43,7 +40,6 @@ module "hello_app" {
 module "movies_app" {
   count                         = var.deploy_movies_app == true ? 1 : 0
   source                        = "./services/movies_app"
-  tags                          = local.common_tags
   aws_region                    = var.aws_region
   log_retention_in_days         = var.log_retention_in_days
   artifact_bucket_id            = module.s3_artifact_bucket[0].id
@@ -64,7 +60,6 @@ module "movies_app" {
 module "secret_app" {
   count                     = var.deploy_secret_app == true ? 1 : 0
   source                    = "./services/secret_app"
-  tags                      = local.common_tags
   secret_value              = var.secret_app_secret_value
   aws_region                = var.aws_region
   log_retention_in_days     = var.log_retention_in_days
