@@ -1,22 +1,3 @@
-# Lambda PowerTools Provided Layer
-variable "aws_provided_layer_account_id" {
-  description = "AWS Provided Account Id for Lambda Power Tools Layer"
-  type        = string
-  default     = "017000801446"
-}
-
-variable "aws_provided_layer_name" {
-  description = "AWS Provided Layer Name for Lambda Power Tools Layer"
-  type        = string
-  default     = "AWSLambdaPowertoolsPython"
-}
-
-variable "aws_provided_layer_version" {
-  description = "AWS Provided Layer Version for Lambda Power Tools Layer"
-  type        = string
-  default     = "22"
-}
-
 # Hello App
 variable "aws_region" {
   description = "The AWS Region"
@@ -47,4 +28,9 @@ variable "api_gw_id" {
 variable "api_gw_log_group_arn" {
   description = "The API GW Cloudwatch Log group ARN"
   type        = string
+}
+
+variable "layers" {
+  description = "The Lambda Layers ARNs"
+  type        = list(string)
 }

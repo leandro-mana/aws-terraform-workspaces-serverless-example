@@ -58,9 +58,7 @@ module "lambda_movies_app" {
     module.generic_iam_policy.arn
   ]
   log_retention_in_days = var.log_retention_in_days
-  layers = [
-    "arn:aws:lambda:${var.aws_region}:${var.aws_provided_layer_account_id}:layer:${var.aws_provided_layer_name}:${var.aws_provided_layer_version}"
-  ]
+  layers                = var.layers
   environment_vars = [
     {
       DDB_TABLE = "${var.movies_app_ddb_table}"

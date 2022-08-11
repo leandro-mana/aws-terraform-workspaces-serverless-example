@@ -30,10 +30,8 @@ module "lambda_secret_app" {
     module.secrets_manager.secret_iam_policy_arn
   ]
   log_retention_in_days = var.log_retention_in_days
-  layers = [
-    "arn:aws:lambda:${var.aws_region}:${var.aws_provided_layer_account_id}:layer:${var.aws_provided_layer_name}:${var.aws_provided_layer_version}"
-  ]
-  environment_vars = []
+  layers                = var.layers
+  environment_vars      = []
 }
 
 module "lambda_permission_secret_app" {
