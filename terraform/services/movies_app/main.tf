@@ -5,7 +5,7 @@ data "archive_file" "movies_app" {
 }
 
 module "ddb_table_movies" {
-  source         = "./../../modules/ddb_table"
+  source         = "./../../manifests/ddb_table"
   table_name     = var.movies_app_ddb_table
   billing_mode   = var.movies_app_ddb_billing_mode
   read_capacity  = var.movies_app_ddb_read_capacity
@@ -33,19 +33,19 @@ data "aws_iam_policy_document" "movies_app" {
 }
 
 module "ddb_iam_policy" {
-  source                   = "./../../modules/iam_policy"
+  source                   = "./../../manifests/iam_policy"
   policy_name              = "movies-policy"
   iam_policy_json_document = data.aws_iam_policy_document.movies_app.json
 }
 
 module "generic_iam_policy" {
-  source                   = "./../../modules/iam_policy"
+  source                   = "./../../manifests/iam_policy"
   policy_name              = "movies-generic-policy"
-  iam_policy_json_document = file("./modules/iam_policies/lambda_generic.json")
+  iam_policy_json_document = file("./manifests/iam_policies/lambda_generic.json")
 }
 
 module "lambda_movies_app" {
-  source             = "./../../modules/lambda"
+  source             = "./../../manifests/lambda"
   artifact_source    = data.archive_file.movies_app.output_path
   artifact_bucket_id = var.artifact_bucket_id
   artifact_s3_key    = "movies_app/movies_app.zip"
@@ -67,21 +67,21 @@ module "lambda_movies_app" {
 }
 
 module "lambda_permission_movies_app" {
-  source      = "./../../modules/lambda_permission"
+  source      = "./../../manifests/lambda_permission"
   lambda_name = module.lambda_movies_app.function_name
   principal   = "apigateway.amazonaws.com"
   source_arn  = var.api_gateway_execution_arn
 }
 
 module "api_gw_stage_movies_app" {
-  source           = "./../../modules/api_gateway_stage"
+  source           = "./../../manifests/api_gateway_stage"
   name             = "${module.lambda_movies_app.function_name}-stage"
   api_gw_id        = var.api_gw_id
   cw_log_group_arn = var.api_gw_log_group_arn
 }
 
 module "api_gw_integration_movies_app" {
-  source             = "./../../modules/api_gateway_integration"
+  source             = "./../../manifests/api_gateway_integration"
   api_gw_id          = var.api_gw_id
   integration_uri    = module.lambda_movies_app.invoke_arn
   integration_type   = "AWS_PROXY"
@@ -89,7 +89,7 @@ module "api_gw_integration_movies_app" {
 }
 
 module "api_gw_route_movies_app" {
-  source    = "./../../modules/api_gateway_route"
+  source    = "./../../manifests/api_gateway_route"
   api_gw_id = var.api_gw_id
   route_key = "POST /movies"
   target    = "integrations/${module.api_gw_integration_movies_app.id}"
