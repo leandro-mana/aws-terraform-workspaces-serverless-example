@@ -8,7 +8,7 @@ locals {
 ######################
 module "s3_artifact_bucket" {
   count       = var.deploy_s3_artifact_bucket == true ? 1 : 0
-  source      = "./modules/s3_artifact_bucket"
+  source      = "./manifests/s3_artifact_bucket"
   bucket_name = "${var.environment}-${var.project}-${var.aws_region}-artifacts"
 }
 
@@ -17,7 +17,7 @@ module "s3_artifact_bucket" {
 ###############
 module "api_gateway" {
   count                 = var.deploy_api_gw == true ? 1 : 0
-  source                = "./modules/api_gateway"
+  source                = "./manifests/api_gateway"
   name                  = "hello_app"
   protocol_type         = "HTTP"
   log_retention_in_days = var.log_retention_in_days
@@ -28,7 +28,7 @@ module "api_gateway" {
 ########################
 module "utils_lambda_layer" {
   count              = var.deploy_utils_lambda_layer == true ? 1 : 0
-  source             = "./modules/lambda_layer"
+  source             = "./manifests/lambda_layer"
   source_dir         = "./../src/lambda_layers/"
   output_path        = "./../build/utils.zip"
   artifact_bucket_id = module.s3_artifact_bucket[0].id
