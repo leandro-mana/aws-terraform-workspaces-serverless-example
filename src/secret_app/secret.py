@@ -4,38 +4,14 @@ This Module has the definition for the Secret App
 It consist on a AWS Lambda Handler that will return a Secret
 based on API Parameter invocation.
 """
-# import json
 import logging
-from boto3 import client
+from botocore.exceptions import ClientError
 from aws_lambda_powertools.utilities.typing import LambdaContext
+from utils.secrets_manager import get_secret
 
 
 LOG = logging.getLogger()
 LOG.setLevel(logging.INFO)
-SECRETS_CLIENT = client('secretsmanager')
-
-
-def __get_secrets(secret_id: str, secret_type='SecretString') -> str:
-    """
-    This internal function returns a secret from Secrets Manager
-
-    params:
-        secret_id: The Secret Name
-        secret_type: The supported secret string
-    """
-    try:
-        response = SECRETS_CLIENT.get_secret_value(SecretId=secret_id)
-        secret = response.get(secret_type)
-        if not secret:
-            raise ValueError(f'SecretType: {secret_type} Not Found')
-
-    except (
-        SECRETS_CLIENT.exceptions.ResourceNotFoundException,
-        SECRETS_CLIENT.exceptions.ClientError) as exc:
-        raise ValueError(exc) from exc
-
-    else:
-        return secret
 
 
 def lambda_handler(event: dict, context: LambdaContext) -> dict:
@@ -57,9 +33,9 @@ def lambda_handler(event: dict, context: LambdaContext) -> dict:
         if not secret_name:
             raise ValueError('No Secret Name Provided')
 
-        secret = __get_secrets(secret_id=secret_name)
+        secret = get_secret(secret_name=secret_name)
 
-    except ValueError as error:
+    except (ClientError, ValueError) as error:
         LOG.error(error)
         err_msg = {
             'statusCode': 404,

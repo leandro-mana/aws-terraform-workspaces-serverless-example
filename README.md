@@ -16,6 +16,7 @@ The purpose of this repository is to provide an end-to-end AWS API ServerLess in
 - [lambda](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_function) using Python:
     - IAM Role and Policy
     - Lambda Permission
+    - Lambda Layer
     - Cloudwatch log group
 - [Dynamo DB Table](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Introduction.html)
 - [Secrets Manager](https://aws.amazon.com/secrets-manager/)
@@ -53,7 +54,7 @@ terraform:
 ```
 
 - `IF` S3 Remote state is prefered, check [aws-terraform-serverless-example](https://github.com/leandro-mana/aws-terraform-serverless-example) which is a simpler variation of this solution by using S3 and DynamoDB, along with a Docker development environment to trigger all the targets from `Makefile`
-- `ELSE`, the example on this repo is by creating a `Development Workspace` in [Terraform Cloud](https://www.terraform.io/cloud-docs), the code groupped into the terraform folder in a [modular](terraform/modules) way to simplify the variables declaration as well as common objects to be used along with the [services](terraform/services) definition. Each service, sources the modules plus any other resource or data block needed for its domain of infrastructure that is self-defined, then at the root of the terraform folder a single [main.tf](terraform/main.tf) definition where all the infrastructure is pointed, and as an extra layer of modularity, individual flags variables are setup for each modular part of the infrastructure to be deployed in different Workspaces, for example the `Development` Workspaces might have all set to `true` for each service component, while on `Production` Workspace there might be still services not ready to be deployed, this allows to keep using the same `main.tf` definition but with different deployment results on each env.
+- `ELSE`, the example on this repo is by creating a `Development Workspace` in [Terraform Cloud](https://www.terraform.io/cloud-docs), the code grouped into the terraform folder in a [modular](terraform/modules) way to simplify the variables declaration as well as common objects to be used along with the [services](terraform/services) definition. Each service, sources the modules plus any other resource or data block needed for its domain of infrastructure that is self-defined, then at the root of the terraform folder a single [main.tf](terraform/main.tf) definition where all the infrastructure is pointed, and as an extra layer of modularity, individual flags variables are setup for each modular part of the infrastructure to be deployed in different Workspaces, for example the `Development` Workspaces might have all set to `true` for each service component, while on `Production` Workspace there might be still services not ready to be deployed, this allows to keep using the same `main.tf` definition but with different deployment results on each env.
 
 **Requirements:**
 - [Python3](https://docs.python-guide.org/starting/installation/)
@@ -73,9 +74,14 @@ Once the `Requirements` installed, follow bellow for a test execution flow:
 # Make Help Target Message
 make [help]
 
-# Python3 Virtual Environment and running tests
+# Python3 Virtual Environment
 python -m venv .venv && source .venv/bin/activate
 pip install --upgrade pip && pip install -r requirements.txt
+
+# Install local modules
+pip install src/lambda_layers/python/
+
+# Run tests
 make test
 
 # - OPTIONAL - Terraform Formatter, if modifying the code
@@ -141,6 +147,7 @@ This example can be extended to different `environments` by adding the respectiv
 - The [secrets_manager](terraform/modules/secrets_manager/main.tf) module, adds such value into Secrets Manager Service, and creates a policy ONLY for that specific secret
 - The [secret_app](terraform/services/secret_app/main.tf) that uses the `secrets_manager` module, adds the IAM Policy ARN to be attached on its IAM Role.
 - Resulting that only this specific service has access to only this specific secret. Such infra definition is simple to track and each service that needs to use secrets will follow similar standards.
+- The [utils](src/lambda_layers/python/utils/) module has been coded to be deployed as a [AWS Lambda Layer](https://docs.aws.amazon.com/lambda/latest/dg/configuration-layers.html) and at the same time to be installed into the Python Virtual Environment for local development/testing.
 
 ![](img/secrets_strategy.drawio.png)
 
