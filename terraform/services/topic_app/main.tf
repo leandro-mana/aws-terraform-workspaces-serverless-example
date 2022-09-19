@@ -6,7 +6,7 @@ data "archive_file" "topic_app" {
 
 module "generic_iam_policy" {
   source                   = "./../../manifests/iam_policy"
-  policy_name              = "movies-generic-policy"
+  policy_name              = "topic-generic-policy"
   iam_policy_json_document = file("./manifests/iam_policies/lambda_generic.json")
 }
 
