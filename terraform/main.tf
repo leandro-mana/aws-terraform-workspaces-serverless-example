@@ -100,3 +100,17 @@ module "secret_app" {
     module.utils_lambda_layer[0].lambda_layer_arn
   ]
 }
+
+##############
+# Topic App #
+##############
+module "topic_app" {
+  source                    = "./services/topic_app"
+  aws_region                = var.aws_region
+  log_retention_in_days     = var.log_retention_in_days
+  artifact_bucket_id        = module.s3_artifact_bucket[0].id
+  layers = [
+    local.aws_lambda_powertools_layer,
+    module.utils_lambda_layer[0].lambda_layer_arn
+  ]
+}
