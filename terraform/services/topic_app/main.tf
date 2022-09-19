@@ -24,5 +24,5 @@ module "lambda_movies_app" {
   ]
   log_retention_in_days = var.log_retention_in_days
   layers                = var.layers
-
+  environment_vars = []
 }
